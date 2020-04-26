@@ -1,4 +1,4 @@
-name: lint
+name: ci
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
           fi
 
       - name: Build
-        run: go build -v .
+        run: go build -v -o sthorer .
 
       - name: golangci-lint
         uses: actions-contrib/golangci-lint@v1
