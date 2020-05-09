@@ -1,0 +1,33 @@
+version: '3'
+services:
+  sthorer:
+    build: .
+    environment:
+      STHORER_IPFS_NODE_URL: "ipfs:5001"
+      STHORER_HOST: "0.0.0.0"
+      STHORER_PORT: "8080"
+      STHORER_DB_DRIVER: "postgres"
+      STHORER_DB_URL: "host=postgres port=5432 user=sthorer dbname=sthorer password=sthorer sslmode=disable"
+    depends_on:
+      - ipfs
+      - postgres
+    ports:
+      - 8080:8080
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: sthorer
+      POSTGRES_USER: sthorer
+      POSTGRES_DB: sthorer
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    volumes:
+      - ipfs:/data/ipfs
+
+volumes:
+  postgres:
+  ipfs:
