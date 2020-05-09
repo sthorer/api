@@ -12,16 +12,16 @@ import (
 func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		c := ctx.(*types.Context)
-		user := c.Get("user").(*jwt.Token)
-		claims := user.Claims.(jwt.MapClaims)
-		id := claims["name"].(int)
+		user := c.Get(types.JWTKey).(*jwt.Token)
+		claims := user.Claims.(*types.JWTCustomClaims)
 
-		u, err := c.Client.User.Get(context.Background(), id)
+		u, err := c.Client.User.Get(context.Background(), claims.UserID)
 		if err != nil {
 			return c.NoContent(http.StatusUnauthorized)
 		}
 
 		c.Set(types.UserKey, u)
+
 		return next(c)
 	}
 }

@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/dgrijalva/jwt-go"
+
 	"github.com/sthorer/api/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -50,7 +52,7 @@ func Initialize() (conf *Config, err error) {
 
 	port := uint16(defaultPort)
 	if rawPort := os.Getenv("STHORER_PORT"); rawPort != "" {
-		p, err := strconv.ParseUint("", 10, 16)
+		p, err := strconv.ParseUint(rawPort, 10, 16)
 		if err != nil {
 			return nil, err
 		}
@@ -68,6 +70,7 @@ func Initialize() (conf *Config, err error) {
 
 		secret = newSecret
 	}
+
 	conf = &Config{
 		Host:      host,
 		Port:      port,
@@ -84,4 +87,15 @@ func Initialize() (conf *Config, err error) {
 	}
 
 	return conf, nil
+}
+
+func (c *Config) Close() error {
+	return c.Client.Close()
+}
+
+func (c *Config) GenerateJWT(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	return token.SignedString([]byte(c.Secret))
 }

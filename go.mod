@@ -6,8 +6,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/facebookincubator/ent v0.2.1
 	github.com/go-playground/validator/v10 v10.2.0
-	github.com/go-sql-driver/mysql v1.5.1-0.20200311113236-681ffa848bae
-	github.com/google/uuid v1.1.1 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/ipfs/go-ipfs-api v0.0.3
 	github.com/ipfs/go-ipfs-files v0.0.8 // indirect
 	github.com/labstack/echo/v4 v4.1.16

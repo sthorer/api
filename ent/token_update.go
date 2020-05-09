@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -35,9 +36,9 @@ func (tu *TokenUpdate) SetName(s string) *TokenUpdate {
 	return tu
 }
 
-// SetToken sets the token field.
-func (tu *TokenUpdate) SetToken(s string) *TokenUpdate {
-	tu.mutation.SetToken(s)
+// SetSecret sets the secret field.
+func (tu *TokenUpdate) SetSecret(s string) *TokenUpdate {
+	tu.mutation.SetSecret(s)
 	return tu
 }
 
@@ -47,17 +48,23 @@ func (tu *TokenUpdate) SetLastUsed(t time.Time) *TokenUpdate {
 	return tu
 }
 
-// SetUserID sets the user edge to User by id.
-func (tu *TokenUpdate) SetUserID(id int) *TokenUpdate {
-	tu.mutation.SetUserID(id)
+// SetNillableLastUsed sets the last_used field if the given value is not nil.
+func (tu *TokenUpdate) SetNillableLastUsed(t *time.Time) *TokenUpdate {
+	if t != nil {
+		tu.SetLastUsed(*t)
+	}
 	return tu
 }
 
-// SetNillableUserID sets the user edge to User by id if the given value is not nil.
-func (tu *TokenUpdate) SetNillableUserID(id *int) *TokenUpdate {
-	if id != nil {
-		tu = tu.SetUserID(*id)
-	}
+// ClearLastUsed clears the value of last_used.
+func (tu *TokenUpdate) ClearLastUsed() *TokenUpdate {
+	tu.mutation.ClearLastUsed()
+	return tu
+}
+
+// SetUserID sets the user edge to User by id.
+func (tu *TokenUpdate) SetUserID(id int) *TokenUpdate {
+	tu.mutation.SetUserID(id)
 	return tu
 }
 
@@ -79,12 +86,15 @@ func (tu *TokenUpdate) Save(ctx context.Context) (int, error) {
 			return 0, fmt.Errorf("ent: validator failed for field \"name\": %v", err)
 		}
 	}
-	if v, ok := tu.mutation.Token(); ok {
-		if err := token.TokenValidator(v); err != nil {
-			return 0, fmt.Errorf("ent: validator failed for field \"token\": %v", err)
+	if v, ok := tu.mutation.Secret(); ok {
+		if err := token.SecretValidator(v); err != nil {
+			return 0, fmt.Errorf("ent: validator failed for field \"secret\": %v", err)
 		}
 	}
 
+	if _, ok := tu.mutation.UserID(); tu.mutation.UserCleared() && !ok {
+		return 0, errors.New("ent: clearing a unique edge \"user\"")
+	}
 	var (
 		err      error
 		affected int
@@ -139,7 +149,7 @@ func (tu *TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   token.Table,
 			Columns: token.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt64,
+				Type:   field.TypeUUID,
 				Column: token.FieldID,
 			},
 		},
@@ -158,17 +168,23 @@ func (tu *TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: token.FieldName,
 		})
 	}
-	if value, ok := tu.mutation.Token(); ok {
+	if value, ok := tu.mutation.Secret(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: token.FieldToken,
+			Column: token.FieldSecret,
 		})
 	}
 	if value, ok := tu.mutation.LastUsed(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
+			Column: token.FieldLastUsed,
+		})
+	}
+	if tu.mutation.LastUsedCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
 			Column: token.FieldLastUsed,
 		})
 	}
@@ -231,9 +247,9 @@ func (tuo *TokenUpdateOne) SetName(s string) *TokenUpdateOne {
 	return tuo
 }
 
-// SetToken sets the token field.
-func (tuo *TokenUpdateOne) SetToken(s string) *TokenUpdateOne {
-	tuo.mutation.SetToken(s)
+// SetSecret sets the secret field.
+func (tuo *TokenUpdateOne) SetSecret(s string) *TokenUpdateOne {
+	tuo.mutation.SetSecret(s)
 	return tuo
 }
 
@@ -243,17 +259,23 @@ func (tuo *TokenUpdateOne) SetLastUsed(t time.Time) *TokenUpdateOne {
 	return tuo
 }
 
-// SetUserID sets the user edge to User by id.
-func (tuo *TokenUpdateOne) SetUserID(id int) *TokenUpdateOne {
-	tuo.mutation.SetUserID(id)
+// SetNillableLastUsed sets the last_used field if the given value is not nil.
+func (tuo *TokenUpdateOne) SetNillableLastUsed(t *time.Time) *TokenUpdateOne {
+	if t != nil {
+		tuo.SetLastUsed(*t)
+	}
 	return tuo
 }
 
-// SetNillableUserID sets the user edge to User by id if the given value is not nil.
-func (tuo *TokenUpdateOne) SetNillableUserID(id *int) *TokenUpdateOne {
-	if id != nil {
-		tuo = tuo.SetUserID(*id)
-	}
+// ClearLastUsed clears the value of last_used.
+func (tuo *TokenUpdateOne) ClearLastUsed() *TokenUpdateOne {
+	tuo.mutation.ClearLastUsed()
+	return tuo
+}
+
+// SetUserID sets the user edge to User by id.
+func (tuo *TokenUpdateOne) SetUserID(id int) *TokenUpdateOne {
+	tuo.mutation.SetUserID(id)
 	return tuo
 }
 
@@ -275,12 +297,15 @@ func (tuo *TokenUpdateOne) Save(ctx context.Context) (*Token, error) {
 			return nil, fmt.Errorf("ent: validator failed for field \"name\": %v", err)
 		}
 	}
-	if v, ok := tuo.mutation.Token(); ok {
-		if err := token.TokenValidator(v); err != nil {
-			return nil, fmt.Errorf("ent: validator failed for field \"token\": %v", err)
+	if v, ok := tuo.mutation.Secret(); ok {
+		if err := token.SecretValidator(v); err != nil {
+			return nil, fmt.Errorf("ent: validator failed for field \"secret\": %v", err)
 		}
 	}
 
+	if _, ok := tuo.mutation.UserID(); tuo.mutation.UserCleared() && !ok {
+		return nil, errors.New("ent: clearing a unique edge \"user\"")
+	}
 	var (
 		err  error
 		node *Token
@@ -335,7 +360,7 @@ func (tuo *TokenUpdateOne) sqlSave(ctx context.Context) (t *Token, err error) {
 			Table:   token.Table,
 			Columns: token.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt64,
+				Type:   field.TypeUUID,
 				Column: token.FieldID,
 			},
 		},
@@ -352,17 +377,23 @@ func (tuo *TokenUpdateOne) sqlSave(ctx context.Context) (t *Token, err error) {
 			Column: token.FieldName,
 		})
 	}
-	if value, ok := tuo.mutation.Token(); ok {
+	if value, ok := tuo.mutation.Secret(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: token.FieldToken,
+			Column: token.FieldSecret,
 		})
 	}
 	if value, ok := tuo.mutation.LastUsed(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
+			Column: token.FieldLastUsed,
+		})
+	}
+	if tuo.mutation.LastUsedCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
 			Column: token.FieldLastUsed,
 		})
 	}

@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/sthorer/api/ent/file"
 	"github.com/sthorer/api/ent/schema"
 	"github.com/sthorer/api/ent/token"
 	"github.com/sthorer/api/ent/user"
@@ -14,6 +15,20 @@ import (
 // code (default values, validators or hooks) and stitches it
 // to their package variables.
 func init() {
+	fileFields := schema.File{}.Fields()
+	_ = fileFields
+	// fileDescHash is the schema descriptor for hash field.
+	fileDescHash := fileFields[1].Descriptor()
+	// file.HashValidator is a validator for the "hash" field. It is called by the builders before save.
+	file.HashValidator = fileDescHash.Validators[0].(func(string) error)
+	// fileDescSize is the schema descriptor for size field.
+	fileDescSize := fileFields[2].Descriptor()
+	// file.SizeValidator is a validator for the "size" field. It is called by the builders before save.
+	file.SizeValidator = fileDescSize.Validators[0].(func(int64) error)
+	// fileDescPinnedAt is the schema descriptor for pinned_at field.
+	fileDescPinnedAt := fileFields[3].Descriptor()
+	// file.DefaultPinnedAt holds the default value on creation for the pinned_at field.
+	file.DefaultPinnedAt = fileDescPinnedAt.Default.(func() time.Time)
 	tokenFields := schema.Token{}.Fields()
 	_ = tokenFields
 	// tokenDescName is the schema descriptor for name field.
@@ -35,19 +50,19 @@ func init() {
 			return nil
 		}
 	}()
-	// tokenDescToken is the schema descriptor for token field.
-	tokenDescToken := tokenFields[2].Descriptor()
-	// token.TokenValidator is a validator for the "token" field. It is called by the builders before save.
-	token.TokenValidator = func() func(string) error {
-		validators := tokenDescToken.Validators
+	// tokenDescSecret is the schema descriptor for secret field.
+	tokenDescSecret := tokenFields[2].Descriptor()
+	// token.SecretValidator is a validator for the "secret" field. It is called by the builders before save.
+	token.SecretValidator = func() func(string) error {
+		validators := tokenDescSecret.Validators
 		fns := [...]func(string) error{
 			validators[0].(func(string) error),
 			validators[1].(func(string) error),
 			validators[2].(func(string) error),
 		}
-		return func(token string) error {
+		return func(secret string) error {
 			for _, fn := range fns {
-				if err := fn(token); err != nil {
+				if err := fn(secret); err != nil {
 					return err
 				}
 			}
@@ -58,10 +73,6 @@ func init() {
 	tokenDescCreatedAt := tokenFields[4].Descriptor()
 	// token.DefaultCreatedAt holds the default value on creation for the created_at field.
 	token.DefaultCreatedAt = tokenDescCreatedAt.Default.(func() time.Time)
-	// tokenDescID is the schema descriptor for id field.
-	tokenDescID := tokenFields[0].Descriptor()
-	// token.IDValidator is a validator for the "id" field. It is called by the builders before save.
-	token.IDValidator = tokenDescID.Validators[0].(func(int64) error)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescEmail is the schema descriptor for email field.

@@ -10,6 +10,8 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/sthorer/api/ent/file"
 	"github.com/sthorer/api/ent/predicate"
 	"github.com/sthorer/api/ent/token"
 	"github.com/sthorer/api/ent/user"
@@ -76,33 +78,63 @@ func (uu *UserUpdate) SetNillablePlan(u *user.Plan) *UserUpdate {
 }
 
 // AddTokenIDs adds the tokens edge to Token by ids.
-func (uu *UserUpdate) AddTokenIDs(ids ...int64) *UserUpdate {
+func (uu *UserUpdate) AddTokenIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddTokenIDs(ids...)
 	return uu
 }
 
 // AddTokens adds the tokens edges to Token.
 func (uu *UserUpdate) AddTokens(t ...*Token) *UserUpdate {
-	ids := make([]int64, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return uu.AddTokenIDs(ids...)
 }
 
+// AddFileIDs adds the files edge to File by ids.
+func (uu *UserUpdate) AddFileIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddFileIDs(ids...)
+	return uu
+}
+
+// AddFiles adds the files edges to File.
+func (uu *UserUpdate) AddFiles(f ...*File) *UserUpdate {
+	ids := make([]uuid.UUID, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return uu.AddFileIDs(ids...)
+}
+
 // RemoveTokenIDs removes the tokens edge to Token by ids.
-func (uu *UserUpdate) RemoveTokenIDs(ids ...int64) *UserUpdate {
+func (uu *UserUpdate) RemoveTokenIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveTokenIDs(ids...)
 	return uu
 }
 
 // RemoveTokens removes tokens edges to Token.
 func (uu *UserUpdate) RemoveTokens(t ...*Token) *UserUpdate {
-	ids := make([]int64, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return uu.RemoveTokenIDs(ids...)
+}
+
+// RemoveFileIDs removes the files edge to File by ids.
+func (uu *UserUpdate) RemoveFileIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveFileIDs(ids...)
+	return uu
+}
+
+// RemoveFiles removes files edges to File.
+func (uu *UserUpdate) RemoveFiles(f ...*File) *UserUpdate {
+	ids := make([]uuid.UUID, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return uu.RemoveFileIDs(ids...)
 }
 
 // Save executes the query and returns the number of rows/vertices matched by this operation.
@@ -237,7 +269,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt64,
+					Type:   field.TypeUUID,
 					Column: token.FieldID,
 				},
 			},
@@ -256,8 +288,46 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt64,
+					Type:   field.TypeUUID,
 					Column: token.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nodes := uu.mutation.RemovedFilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.FilesTable,
+			Columns: []string{user.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: file.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.FilesTable,
+			Columns: []string{user.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: file.FieldID,
 				},
 			},
 		}
@@ -331,33 +401,63 @@ func (uuo *UserUpdateOne) SetNillablePlan(u *user.Plan) *UserUpdateOne {
 }
 
 // AddTokenIDs adds the tokens edge to Token by ids.
-func (uuo *UserUpdateOne) AddTokenIDs(ids ...int64) *UserUpdateOne {
+func (uuo *UserUpdateOne) AddTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddTokenIDs(ids...)
 	return uuo
 }
 
 // AddTokens adds the tokens edges to Token.
 func (uuo *UserUpdateOne) AddTokens(t ...*Token) *UserUpdateOne {
-	ids := make([]int64, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return uuo.AddTokenIDs(ids...)
 }
 
+// AddFileIDs adds the files edge to File by ids.
+func (uuo *UserUpdateOne) AddFileIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddFileIDs(ids...)
+	return uuo
+}
+
+// AddFiles adds the files edges to File.
+func (uuo *UserUpdateOne) AddFiles(f ...*File) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return uuo.AddFileIDs(ids...)
+}
+
 // RemoveTokenIDs removes the tokens edge to Token by ids.
-func (uuo *UserUpdateOne) RemoveTokenIDs(ids ...int64) *UserUpdateOne {
+func (uuo *UserUpdateOne) RemoveTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveTokenIDs(ids...)
 	return uuo
 }
 
 // RemoveTokens removes tokens edges to Token.
 func (uuo *UserUpdateOne) RemoveTokens(t ...*Token) *UserUpdateOne {
-	ids := make([]int64, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return uuo.RemoveTokenIDs(ids...)
+}
+
+// RemoveFileIDs removes the files edge to File by ids.
+func (uuo *UserUpdateOne) RemoveFileIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveFileIDs(ids...)
+	return uuo
+}
+
+// RemoveFiles removes files edges to File.
+func (uuo *UserUpdateOne) RemoveFiles(f ...*File) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return uuo.RemoveFileIDs(ids...)
 }
 
 // Save executes the query and returns the updated entity.
@@ -490,7 +590,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt64,
+					Type:   field.TypeUUID,
 					Column: token.FieldID,
 				},
 			},
@@ -509,8 +609,46 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt64,
+					Type:   field.TypeUUID,
 					Column: token.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nodes := uuo.mutation.RemovedFilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.FilesTable,
+			Columns: []string{user.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: file.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.FilesTable,
+			Columns: []string{user.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: file.FieldID,
 				},
 			},
 		}

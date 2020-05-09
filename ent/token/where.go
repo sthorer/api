@@ -7,32 +7,33 @@ import (
 
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 	"github.com/sthorer/api/ent/predicate"
 )
 
 // ID filters vertices based on their identifier.
-func ID(id int64) predicate.Token {
+func ID(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int64) predicate.Token {
+func IDEQ(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int64) predicate.Token {
+func IDNEQ(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int64) predicate.Token {
+func IDIn(ids ...uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -49,7 +50,7 @@ func IDIn(ids ...int64) predicate.Token {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int64) predicate.Token {
+func IDNotIn(ids ...uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -66,28 +67,28 @@ func IDNotIn(ids ...int64) predicate.Token {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int64) predicate.Token {
+func IDGT(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int64) predicate.Token {
+func IDGTE(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int64) predicate.Token {
+func IDLT(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int64) predicate.Token {
+func IDLTE(id uuid.UUID) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -100,10 +101,10 @@ func Name(v string) predicate.Token {
 	})
 }
 
-// Token applies equality check predicate on the "token" field. It's identical to TokenEQ.
-func Token(v string) predicate.Token {
+// Secret applies equality check predicate on the "secret" field. It's identical to SecretEQ.
+func Secret(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldToken), v))
+		s.Where(sql.EQ(s.C(FieldSecret), v))
 	})
 }
 
@@ -232,22 +233,22 @@ func NameContainsFold(v string) predicate.Token {
 	})
 }
 
-// TokenEQ applies the EQ predicate on the "token" field.
-func TokenEQ(v string) predicate.Token {
+// SecretEQ applies the EQ predicate on the "secret" field.
+func SecretEQ(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldToken), v))
+		s.Where(sql.EQ(s.C(FieldSecret), v))
 	})
 }
 
-// TokenNEQ applies the NEQ predicate on the "token" field.
-func TokenNEQ(v string) predicate.Token {
+// SecretNEQ applies the NEQ predicate on the "secret" field.
+func SecretNEQ(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldToken), v))
+		s.Where(sql.NEQ(s.C(FieldSecret), v))
 	})
 }
 
-// TokenIn applies the In predicate on the "token" field.
-func TokenIn(vs ...string) predicate.Token {
+// SecretIn applies the In predicate on the "secret" field.
+func SecretIn(vs ...string) predicate.Token {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -259,12 +260,12 @@ func TokenIn(vs ...string) predicate.Token {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldToken), v...))
+		s.Where(sql.In(s.C(FieldSecret), v...))
 	})
 }
 
-// TokenNotIn applies the NotIn predicate on the "token" field.
-func TokenNotIn(vs ...string) predicate.Token {
+// SecretNotIn applies the NotIn predicate on the "secret" field.
+func SecretNotIn(vs ...string) predicate.Token {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -276,70 +277,70 @@ func TokenNotIn(vs ...string) predicate.Token {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldToken), v...))
+		s.Where(sql.NotIn(s.C(FieldSecret), v...))
 	})
 }
 
-// TokenGT applies the GT predicate on the "token" field.
-func TokenGT(v string) predicate.Token {
+// SecretGT applies the GT predicate on the "secret" field.
+func SecretGT(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldToken), v))
+		s.Where(sql.GT(s.C(FieldSecret), v))
 	})
 }
 
-// TokenGTE applies the GTE predicate on the "token" field.
-func TokenGTE(v string) predicate.Token {
+// SecretGTE applies the GTE predicate on the "secret" field.
+func SecretGTE(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldToken), v))
+		s.Where(sql.GTE(s.C(FieldSecret), v))
 	})
 }
 
-// TokenLT applies the LT predicate on the "token" field.
-func TokenLT(v string) predicate.Token {
+// SecretLT applies the LT predicate on the "secret" field.
+func SecretLT(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldToken), v))
+		s.Where(sql.LT(s.C(FieldSecret), v))
 	})
 }
 
-// TokenLTE applies the LTE predicate on the "token" field.
-func TokenLTE(v string) predicate.Token {
+// SecretLTE applies the LTE predicate on the "secret" field.
+func SecretLTE(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldToken), v))
+		s.Where(sql.LTE(s.C(FieldSecret), v))
 	})
 }
 
-// TokenContains applies the Contains predicate on the "token" field.
-func TokenContains(v string) predicate.Token {
+// SecretContains applies the Contains predicate on the "secret" field.
+func SecretContains(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldToken), v))
+		s.Where(sql.Contains(s.C(FieldSecret), v))
 	})
 }
 
-// TokenHasPrefix applies the HasPrefix predicate on the "token" field.
-func TokenHasPrefix(v string) predicate.Token {
+// SecretHasPrefix applies the HasPrefix predicate on the "secret" field.
+func SecretHasPrefix(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldToken), v))
+		s.Where(sql.HasPrefix(s.C(FieldSecret), v))
 	})
 }
 
-// TokenHasSuffix applies the HasSuffix predicate on the "token" field.
-func TokenHasSuffix(v string) predicate.Token {
+// SecretHasSuffix applies the HasSuffix predicate on the "secret" field.
+func SecretHasSuffix(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldToken), v))
+		s.Where(sql.HasSuffix(s.C(FieldSecret), v))
 	})
 }
 
-// TokenEqualFold applies the EqualFold predicate on the "token" field.
-func TokenEqualFold(v string) predicate.Token {
+// SecretEqualFold applies the EqualFold predicate on the "secret" field.
+func SecretEqualFold(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldToken), v))
+		s.Where(sql.EqualFold(s.C(FieldSecret), v))
 	})
 }
 
-// TokenContainsFold applies the ContainsFold predicate on the "token" field.
-func TokenContainsFold(v string) predicate.Token {
+// SecretContainsFold applies the ContainsFold predicate on the "secret" field.
+func SecretContainsFold(v string) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldToken), v))
+		s.Where(sql.ContainsFold(s.C(FieldSecret), v))
 	})
 }
 
@@ -540,6 +541,20 @@ func LastUsedLT(v time.Time) predicate.Token {
 func LastUsedLTE(v time.Time) predicate.Token {
 	return predicate.Token(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldLastUsed), v))
+	})
+}
+
+// LastUsedIsNil applies the IsNil predicate on the "last_used" field.
+func LastUsedIsNil() predicate.Token {
+	return predicate.Token(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLastUsed)))
+	})
+}
+
+// LastUsedNotNil applies the NotNil predicate on the "last_used" field.
+func LastUsedNotNil() predicate.Token {
+	return predicate.Token(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLastUsed)))
 	})
 }
 

@@ -37,9 +37,11 @@ type User struct {
 type UserEdges struct {
 	// Tokens holds the value of the tokens edge.
 	Tokens []*Token
+	// Files holds the value of the files edge.
+	Files []*File
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TokensOrErr returns the Tokens value or an error if the edge
@@ -49,6 +51,15 @@ func (e UserEdges) TokensOrErr() ([]*Token, error) {
 		return e.Tokens, nil
 	}
 	return nil, &NotLoadedError{edge: "tokens"}
+}
+
+// FilesOrErr returns the Files value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FilesOrErr() ([]*File, error) {
+	if e.loadedTypes[1] {
+		return e.Files, nil
+	}
+	return nil, &NotLoadedError{edge: "files"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -112,6 +123,11 @@ func (u *User) assignValues(values ...interface{}) error {
 // QueryTokens queries the tokens edge of the User.
 func (u *User) QueryTokens() *TokenQuery {
 	return (&UserClient{config: u.config}).QueryTokens(u)
+}
+
+// QueryFiles queries the files edge of the User.
+func (u *User) QueryFiles() *FileQuery {
+	return (&UserClient{config: u.config}).QueryFiles(u)
 }
 
 // Update returns a builder for updating this User.

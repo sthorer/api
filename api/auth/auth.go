@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
+
 	"github.com/labstack/echo/v4"
 
 	"github.com/sthorer/api/api/types"
-	"github.com/sthorer/api/utils"
+	"github.com/sthorer/api/ent"
 )
 
 func Login(ctx echo.Context) error {
@@ -28,7 +30,13 @@ func Login(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "invalid email or password")
 	}
 
-	token, err := utils.GenerateJWT(c.Config.Secret, u.ID, time.Now().Add(time.Hour*24*7))
+	token, err := c.Config.GenerateJWT(&types.JWTCustomClaims{
+		UserID: u.ID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 24 * 7).Unix(),
+			IssuedAt:  time.Now().Unix(),
+		},
+	})
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
@@ -50,13 +58,12 @@ func Register(ctx echo.Context) error {
 
 	u, err := c.Client.UserRegister(context.Background(), auth.Email, auth.Password)
 	if err != nil {
+		if ent.IsConstraintError(err) {
+			return echo.NewHTTPError(http.StatusForbidden, "email already registered")
+		}
+
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	token, err := utils.GenerateJWT(c.Config.Secret, u.ID, time.Now().Add(time.Hour*24*7))
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	return c.JSON(http.StatusOK, &types.AuthResponse{User: u, Token: token})
+	return c.JSON(http.StatusOK, u)
 }

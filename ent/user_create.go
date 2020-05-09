@@ -10,6 +10,8 @@ import (
 
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/sthorer/api/ent/file"
 	"github.com/sthorer/api/ent/token"
 	"github.com/sthorer/api/ent/user"
 )
@@ -90,18 +92,33 @@ func (uc *UserCreate) SetNillablePlan(u *user.Plan) *UserCreate {
 }
 
 // AddTokenIDs adds the tokens edge to Token by ids.
-func (uc *UserCreate) AddTokenIDs(ids ...int64) *UserCreate {
+func (uc *UserCreate) AddTokenIDs(ids ...uuid.UUID) *UserCreate {
 	uc.mutation.AddTokenIDs(ids...)
 	return uc
 }
 
 // AddTokens adds the tokens edges to Token.
 func (uc *UserCreate) AddTokens(t ...*Token) *UserCreate {
-	ids := make([]int64, len(t))
+	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return uc.AddTokenIDs(ids...)
+}
+
+// AddFileIDs adds the files edge to File by ids.
+func (uc *UserCreate) AddFileIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddFileIDs(ids...)
+	return uc
+}
+
+// AddFiles adds the files edges to File.
+func (uc *UserCreate) AddFiles(f ...*File) *UserCreate {
+	ids := make([]uuid.UUID, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return uc.AddFileIDs(ids...)
 }
 
 // Save creates the User in the database.
@@ -246,8 +263,27 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt64,
+					Type:   field.TypeUUID,
 					Column: token.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.FilesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.FilesTable,
+			Columns: []string{user.FilesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: file.FieldID,
 				},
 			},
 		}

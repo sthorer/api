@@ -11,6 +11,7 @@ import (
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/sthorer/api/ent/predicate"
 	"github.com/sthorer/api/ent/token"
 	"github.com/sthorer/api/ent/user"
@@ -96,8 +97,8 @@ func (tq *TokenQuery) FirstX(ctx context.Context) *Token {
 }
 
 // FirstID returns the first Token id in the query. Returns *NotFoundError when no id was found.
-func (tq *TokenQuery) FirstID(ctx context.Context) (id int64, err error) {
-	var ids []int64
+func (tq *TokenQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -109,7 +110,7 @@ func (tq *TokenQuery) FirstID(ctx context.Context) (id int64, err error) {
 }
 
 // FirstXID is like FirstID, but panics if an error occurs.
-func (tq *TokenQuery) FirstXID(ctx context.Context) int64 {
+func (tq *TokenQuery) FirstXID(ctx context.Context) uuid.UUID {
 	id, err := tq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -143,8 +144,8 @@ func (tq *TokenQuery) OnlyX(ctx context.Context) *Token {
 }
 
 // OnlyID returns the only Token id in the query, returns an error if not exactly one id was returned.
-func (tq *TokenQuery) OnlyID(ctx context.Context) (id int64, err error) {
-	var ids []int64
+func (tq *TokenQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -160,7 +161,7 @@ func (tq *TokenQuery) OnlyID(ctx context.Context) (id int64, err error) {
 }
 
 // OnlyXID is like OnlyID, but panics if an error occurs.
-func (tq *TokenQuery) OnlyXID(ctx context.Context) int64 {
+func (tq *TokenQuery) OnlyXID(ctx context.Context) uuid.UUID {
 	id, err := tq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -186,8 +187,8 @@ func (tq *TokenQuery) AllX(ctx context.Context) []*Token {
 }
 
 // IDs executes the query and returns a list of Token ids.
-func (tq *TokenQuery) IDs(ctx context.Context) ([]int64, error) {
-	var ids []int64
+func (tq *TokenQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := tq.Select(token.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -195,7 +196,7 @@ func (tq *TokenQuery) IDs(ctx context.Context) ([]int64, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TokenQuery) IDsX(ctx context.Context) []int64 {
+func (tq *TokenQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := tq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -412,7 +413,7 @@ func (tq *TokenQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   token.Table,
 			Columns: token.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt64,
+				Type:   field.TypeUUID,
 				Column: token.FieldID,
 			},
 		},

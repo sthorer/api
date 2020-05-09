@@ -10,6 +10,7 @@ import (
 
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
 	"github.com/facebookincubator/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/sthorer/api/ent/token"
 	"github.com/sthorer/api/ent/user"
 )
@@ -27,9 +28,9 @@ func (tc *TokenCreate) SetName(s string) *TokenCreate {
 	return tc
 }
 
-// SetToken sets the token field.
-func (tc *TokenCreate) SetToken(s string) *TokenCreate {
-	tc.mutation.SetToken(s)
+// SetSecret sets the secret field.
+func (tc *TokenCreate) SetSecret(s string) *TokenCreate {
+	tc.mutation.SetSecret(s)
 	return tc
 }
 
@@ -67,23 +68,23 @@ func (tc *TokenCreate) SetLastUsed(t time.Time) *TokenCreate {
 	return tc
 }
 
+// SetNillableLastUsed sets the last_used field if the given value is not nil.
+func (tc *TokenCreate) SetNillableLastUsed(t *time.Time) *TokenCreate {
+	if t != nil {
+		tc.SetLastUsed(*t)
+	}
+	return tc
+}
+
 // SetID sets the id field.
-func (tc *TokenCreate) SetID(i int64) *TokenCreate {
-	tc.mutation.SetID(i)
+func (tc *TokenCreate) SetID(u uuid.UUID) *TokenCreate {
+	tc.mutation.SetID(u)
 	return tc
 }
 
 // SetUserID sets the user edge to User by id.
 func (tc *TokenCreate) SetUserID(id int) *TokenCreate {
 	tc.mutation.SetUserID(id)
-	return tc
-}
-
-// SetNillableUserID sets the user edge to User by id if the given value is not nil.
-func (tc *TokenCreate) SetNillableUserID(id *int) *TokenCreate {
-	if id != nil {
-		tc = tc.SetUserID(*id)
-	}
 	return tc
 }
 
@@ -102,12 +103,12 @@ func (tc *TokenCreate) Save(ctx context.Context) (*Token, error) {
 			return nil, fmt.Errorf("ent: validator failed for field \"name\": %v", err)
 		}
 	}
-	if _, ok := tc.mutation.Token(); !ok {
-		return nil, errors.New("ent: missing required field \"token\"")
+	if _, ok := tc.mutation.Secret(); !ok {
+		return nil, errors.New("ent: missing required field \"secret\"")
 	}
-	if v, ok := tc.mutation.Token(); ok {
-		if err := token.TokenValidator(v); err != nil {
-			return nil, fmt.Errorf("ent: validator failed for field \"token\": %v", err)
+	if v, ok := tc.mutation.Secret(); ok {
+		if err := token.SecretValidator(v); err != nil {
+			return nil, fmt.Errorf("ent: validator failed for field \"secret\": %v", err)
 		}
 	}
 	if _, ok := tc.mutation.Permissions(); !ok {
@@ -123,13 +124,8 @@ func (tc *TokenCreate) Save(ctx context.Context) (*Token, error) {
 		v := token.DefaultCreatedAt()
 		tc.mutation.SetCreatedAt(v)
 	}
-	if _, ok := tc.mutation.LastUsed(); !ok {
-		return nil, errors.New("ent: missing required field \"last_used\"")
-	}
-	if v, ok := tc.mutation.ID(); ok {
-		if err := token.IDValidator(v); err != nil {
-			return nil, fmt.Errorf("ent: validator failed for field \"id\": %v", err)
-		}
+	if _, ok := tc.mutation.UserID(); !ok {
+		return nil, errors.New("ent: missing required edge \"user\"")
 	}
 	var (
 		err  error
@@ -172,7 +168,7 @@ func (tc *TokenCreate) sqlSave(ctx context.Context) (*Token, error) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: token.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt64,
+				Type:   field.TypeUUID,
 				Column: token.FieldID,
 			},
 		}
@@ -189,13 +185,13 @@ func (tc *TokenCreate) sqlSave(ctx context.Context) (*Token, error) {
 		})
 		t.Name = value
 	}
-	if value, ok := tc.mutation.Token(); ok {
+	if value, ok := tc.mutation.Secret(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: token.FieldToken,
+			Column: token.FieldSecret,
 		})
-		t.Token = value
+		t.Secret = value
 	}
 	if value, ok := tc.mutation.Permissions(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -245,10 +241,6 @@ func (tc *TokenCreate) sqlSave(ctx context.Context) (*Token, error) {
 			err = cerr
 		}
 		return nil, err
-	}
-	if t.ID == 0 {
-		id := _spec.ID.Value.(int64)
-		t.ID = int64(id)
 	}
 	return t, nil
 }

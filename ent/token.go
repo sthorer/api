@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/facebookincubator/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/sthorer/api/ent/token"
 	"github.com/sthorer/api/ent/user"
 )
@@ -16,11 +17,11 @@ import (
 type Token struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int64 `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Token holds the value of the "token" field.
-	Token string `json:"-"`
+	// Secret holds the value of the "secret" field.
+	Secret string `json:"-"`
 	// Permissions holds the value of the "permissions" field.
 	Permissions token.Permissions `json:"permissions,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -59,9 +60,9 @@ func (e TokenEdges) UserOrErr() (*User, error) {
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Token) scanValues() []interface{} {
 	return []interface{}{
-		&sql.NullInt64{},  // id
+		&uuid.UUID{},      // id
 		&sql.NullString{}, // name
-		&sql.NullString{}, // token
+		&sql.NullString{}, // secret
 		&sql.NullString{}, // permissions
 		&sql.NullTime{},   // created_at
 		&sql.NullTime{},   // last_used
@@ -81,11 +82,11 @@ func (t *Token) assignValues(values ...interface{}) error {
 	if m, n := len(values), len(token.Columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
+	if value, ok := values[0].(*uuid.UUID); !ok {
+		return fmt.Errorf("unexpected type %T for field id", values[0])
+	} else if value != nil {
+		t.ID = *value
 	}
-	t.ID = int64(value.Int64)
 	values = values[1:]
 	if value, ok := values[0].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field name", values[0])
@@ -93,9 +94,9 @@ func (t *Token) assignValues(values ...interface{}) error {
 		t.Name = value.String
 	}
 	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field token", values[1])
+		return fmt.Errorf("unexpected type %T for field secret", values[1])
 	} else if value.Valid {
-		t.Token = value.String
+		t.Secret = value.String
 	}
 	if value, ok := values[2].(*sql.NullString); !ok {
 		return fmt.Errorf("unexpected type %T for field permissions", values[2])
@@ -154,7 +155,7 @@ func (t *Token) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
 	builder.WriteString(", name=")
 	builder.WriteString(t.Name)
-	builder.WriteString(", token=<sensitive>")
+	builder.WriteString(", secret=<sensitive>")
 	builder.WriteString(", permissions=")
 	builder.WriteString(fmt.Sprintf("%v", t.Permissions))
 	builder.WriteString(", created_at=")

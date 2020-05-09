@@ -5,8 +5,7 @@ import "crypto/rand"
 const alphaNum = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 func GenerateSecret(length uint) (string, error) {
-	var bytes = make([]byte, length)
-
+	bytes := make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}

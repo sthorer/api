@@ -12,8 +12,8 @@ const (
 	Label = "token"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID          = "id"          // FieldName holds the string denoting the name vertex property in the database.
-	FieldName        = "name"        // FieldToken holds the string denoting the token vertex property in the database.
-	FieldToken       = "token"       // FieldPermissions holds the string denoting the permissions vertex property in the database.
+	FieldName        = "name"        // FieldSecret holds the string denoting the secret vertex property in the database.
+	FieldSecret      = "secret"      // FieldPermissions holds the string denoting the permissions vertex property in the database.
 	FieldPermissions = "permissions" // FieldCreatedAt holds the string denoting the created_at vertex property in the database.
 	FieldCreatedAt   = "created_at"  // FieldLastUsed holds the string denoting the last_used vertex property in the database.
 	FieldLastUsed    = "last_used"
@@ -36,7 +36,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
-	FieldToken,
+	FieldSecret,
 	FieldPermissions,
 	FieldCreatedAt,
 	FieldLastUsed,
@@ -50,12 +50,10 @@ var ForeignKeys = []string{
 var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
-	// TokenValidator is a validator for the "token" field. It is called by the builders before save.
-	TokenValidator func(string) error
+	// SecretValidator is a validator for the "secret" field. It is called by the builders before save.
+	SecretValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the created_at field.
 	DefaultCreatedAt func() time.Time
-	// IDValidator is a validator for the "id" field. It is called by the builders before save.
-	IDValidator func(int64) error
 )
 
 // Permissions defines the type for the permissions enum field.

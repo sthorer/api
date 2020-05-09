@@ -4,12 +4,14 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+
 	"github.com/sthorer/api/config"
 )
 
 const (
-	UserKey  = "user"
-	TokenKey = "token"
+	UserKey  = "User"
+	JWTKey   = "JWT"
+	TokenKey = "Token"
 )
 
 type Context struct {

@@ -8,7 +8,7 @@ import (
 func Apply(e *echo.Echo) {
 	group := e.Group("/files")
 
-	group.Use(middlewares.File())
+	group.Use(middlewares.TokenAuth())
 
 	group.POST("/upload", Upload)
 }

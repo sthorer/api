@@ -3,6 +3,7 @@ package ipfs
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -23,8 +24,17 @@ func Initialize() (*IPFS, error) {
 	}
 
 	sh := shell.NewShellWithClient(ipfsNodeURL, &http.Client{Timeout: time.Second * 10})
-	if _, err := sh.Request("ping").Send(context.Background()); err != nil {
-		return nil, fmt.Errorf("failed to ping IPFS node at: %s", ipfsNodeURL)
+	for attempt := 0; ; attempt++ {
+		if attempt > 10 {
+			return nil, fmt.Errorf("failed to ping IPFS node at: %s", ipfsNodeURL)
+		}
+
+		if _, err := sh.Request("ping").Send(context.Background()); err == nil {
+			break
+		}
+
+		log.Println("failed to connect to IPFS node. Retrying...")
+		time.Sleep(time.Second * 5)
 	}
 
 	return &IPFS{Shell: sh}, nil

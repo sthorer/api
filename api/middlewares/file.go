@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,13 +14,15 @@ import (
 	"github.com/sthorer/api/ent/user"
 )
 
-func File() echo.MiddlewareFunc {
-	return middleware.BasicAuth(func(username, tkn string, ctx echo.Context) (bool, error) {
-		c := ctx.(*types.Context)
-		t, err := c.Client.Token.
+func TokenAuth() echo.MiddlewareFunc {
+	return middleware.BasicAuth(func(username, secret string, c echo.Context) (bool, error) {
+		cc := c.(*types.Context)
+		ctx := context.Background()
+		t, err := cc.Client.Token.
 			Query().
-			Where(token.Token(tkn), token.HasUserWith(user.Email(username))).
-			Only(context.Background())
+			Where(token.Secret(secret), token.HasUserWith(user.Email(username))).
+			WithUser().
+			Only(ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
 				return false, echo.NewHTTPError(http.StatusUnauthorized, "invalid token")
@@ -28,7 +31,13 @@ func File() echo.MiddlewareFunc {
 			return false, err
 		}
 
-		c.Set(types.TokenKey, t)
+		if err = t.Update().SetLastUsed(time.Now()).Exec(ctx); err != nil {
+			return false, err
+		}
+
+		cc.Set(types.TokenKey, t)
+		cc.Set(types.UserKey, t.Edges.User)
+
 		return true, nil
 	})
 }

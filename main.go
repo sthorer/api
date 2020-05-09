@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
@@ -18,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer conf.Client.Close()
+	defer conf.Close()
 
 	e := api.New(conf)
 	e.Logger.Fatal(e.Start(fmt.Sprintf("%s:%d", conf.Host, conf.Port)))

@@ -21,6 +21,7 @@ func New(conf *config.Config) *echo.Echo {
 	e.Validator = &types.Validator{Validator: conf.Validator}
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+	e.Use(middleware.Gzip())
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
 	e.Use(middlewares.Context(conf))

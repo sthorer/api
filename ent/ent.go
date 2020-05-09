@@ -12,6 +12,7 @@ import (
 	"github.com/facebookincubator/ent/dialect"
 	"github.com/facebookincubator/ent/dialect/sql"
 	"github.com/facebookincubator/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 // ent aliases to avoid import conflict in user's code.
@@ -254,8 +255,8 @@ func insertLastID(ctx context.Context, tx dialect.Tx, insert *sql.InsertBuilder)
 }
 
 // keys returns the keys/ids from the edge map.
-func keys(m map[int64]struct{}) []int64 {
-	s := make([]int64, 0, len(m))
+func keys(m map[uuid.UUID]struct{}) []uuid.UUID {
+	s := make([]uuid.UUID, 0, len(m))
 	for id := range m {
 		s = append(s, id)
 	}

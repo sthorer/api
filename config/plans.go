@@ -1,4 +1,4 @@
-package plans
+package config
 
 const (
 	// 50 MB
